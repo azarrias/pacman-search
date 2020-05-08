@@ -72,6 +72,21 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+def uninformedSearch(problem, fringe):
+    from game import Directions
+
+    # keep track of frontier nodes, and also of all actions that led to each node
+    fringe.push((problem.getStartState(), []))
+    visited = set()
+    while fringe:
+        currentNode, actions = fringe.pop()
+        if currentNode not in visited:
+            if problem.isGoalState(currentNode):
+                return actions
+            visited.add(currentNode)
+            for node, action, _ in problem.getSuccessors(currentNode):
+                fringe.push((node, actions + [action]))
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -87,25 +102,12 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    from game import Directions
-
-    fringe = util.Stack()
-    # keep track of frontier nodes, and also of all actions that led to each node
-    fringe.push((problem.getStartState(), []))
-    visited = set()
-    while fringe:
-        currentNode, actions = fringe.pop()
-        if currentNode not in visited:
-            if problem.isGoalState(currentNode):
-                return actions
-            visited.add(currentNode)
-            for node, action, _ in problem.getSuccessors(currentNode):
-                fringe.push((node, actions + [action]))
+    return uninformedSearch(problem, util.Stack())
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return uninformedSearch(problem, util.Queue())
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
