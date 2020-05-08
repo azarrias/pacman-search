@@ -61,6 +61,15 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+class Node:
+    """
+    Represents a node in a search graph, consisting of a state, as well as the 
+    list of actions and the accumulated cost to get from the start to this node 
+    """
+    def __init__(self, state, actions, pathCost):
+        self.state = state
+        self.actions = actions
+        self.pathCost = pathCost
 
 def tinyMazeSearch(problem):
     """
@@ -72,20 +81,25 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def uninformedSearch(problem, fringe):
+def classicSearch(problem, fringe):
+    """
+    Generic function that implements a certain search strategy depending on 
+    the chosen data structure to represent the fringe, and returns a set of 
+    actions to get to the problem goal, depending on the search strategy
+    """
     from game import Directions
 
-    # keep track of frontier nodes, and also of all actions that led to each node
-    fringe.push((problem.getStartState(), []))
+    # keep track of frontier nodes (state, list of actions and accumulated cost)
+    fringe.push(Node(problem.getStartState(), [], 0))
     visited = set()
     while fringe:
-        currentNode, actions = fringe.pop()
-        if currentNode not in visited:
-            if problem.isGoalState(currentNode):
-                return actions
-            visited.add(currentNode)
-            for node, action, _ in problem.getSuccessors(currentNode):
-                fringe.push((node, actions + [action]))
+        currentNode = fringe.pop()
+        if currentNode.state not in visited:
+            if problem.isGoalState(currentNode.state):
+                return currentNode.actions
+            visited.add(currentNode.state)
+            for successorState, action, stepCost in problem.getSuccessors(currentNode.state):
+                fringe.push(Node(successorState, currentNode.actions + [action], currentNode.pathCost + stepCost))
 
 def depthFirstSearch(problem):
     """
@@ -102,31 +116,17 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    return uninformedSearch(problem, util.Stack())
+    return classicSearch(problem, util.Stack())
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    return uninformedSearch(problem, util.Queue())
+    return classicSearch(problem, util.Queue())
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    from game import Directions
-
-    fringe = util.PriorityQueue()
-    # keep track of frontier nodes, and also all actions that led to each node
-    # the priority for each node will be the total cost to get to it from the start
-    fringe.push((problem.getStartState(), []), 0)
-    visited = set()
-    while fringe:
-        currentNode, actions = fringe.pop()
-        if currentNode not in visited:
-            if problem.isGoalState(currentNode):
-                return actions
-            visited.add(currentNode)
-            for node, action, cost in problem.getSuccessors(currentNode):
-                fringe.push((node, actions + [action]), cost)
+    return classicSearch(problem, util.PriorityQueueWithFunction(lambda node: node.pathCost))
 
 def nullHeuristic(state, problem=None):
     """
@@ -138,8 +138,7 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    return classicSearch(problem, util.PriorityQueueWithFunction(lambda node: node.pathCost + heuristic(node.state, problem)))
 
 # Abbreviations
 bfs = breadthFirstSearch
