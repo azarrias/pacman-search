@@ -288,6 +288,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.startState = (self.startingPosition, tuple([self.startingPosition == c for c in self.corners]))
 
     def getStartState(self):
         """
@@ -295,14 +296,15 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.startState
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        _, visitedCorners = state
+        return False not in visitedCorners
 
     def getSuccessors(self, state):
         """
@@ -325,6 +327,15 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            position, visitedCorners = state
+            x, y = position
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.walls[nextx][nexty]:
+                visitedCorners = tuple([True if (nextx, nexty) == self.corners[i] else visitedCorners[i] for i in range(len(self.corners))])
+                nextState = ((nextx, nexty), visitedCorners)
+                stepCost = 1
+                successors.append((nextState, action, stepCost))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -360,7 +371,10 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    from util import manhattanDistance
+    position, visitedCorners = state
+    costToClosestCorner, _ = min([(manhattanDistance(position, corners[i]), corners[i]) for i in range(len(corners)) if visitedCorners[i] == False])
+    return costToClosestCorner
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

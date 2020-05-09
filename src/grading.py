@@ -14,7 +14,12 @@
 
 "Common code for autograders"
 
-import cgi
+try:
+    # Python 3.2 deprecates cgi.escape() and adds html.escape() as a replacement.
+    from html import escape
+except ImportError:
+    from cgi import escape
+
 import time
 import sys
 import json
@@ -290,7 +295,8 @@ class Grades:
         if self.mute: util.unmutePrint()
         print('*** ' + message)
         if self.mute: util.mutePrint()
-        message = cgi.escape(message)
+#        message = cgi.escape(message)
+        message = escape(message)
     self.messages[self.currentQuestion].append(message)
 
   def addMessageToEmail(self, message):
