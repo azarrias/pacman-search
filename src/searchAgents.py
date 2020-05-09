@@ -373,7 +373,11 @@ def cornersHeuristic(state, problem):
     "*** YOUR CODE HERE ***"
     from util import manhattanDistance
     position, visitedCorners = state
-    costToClosestCorner, _ = min([(manhattanDistance(position, corners[i]), corners[i]) for i in range(len(corners)) if visitedCorners[i] == False])
+
+    if False in visitedCorners:
+        costToClosestCorner = max([(manhattanDistance(position, corners[i])) for i in range(len(corners)) if visitedCorners[i] == False])
+    else:
+        costToClosestCorner = 0
     return costToClosestCorner
 
 class AStarCornersAgent(SearchAgent):
