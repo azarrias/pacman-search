@@ -374,11 +374,19 @@ def cornersHeuristic(state, problem):
     from util import manhattanDistance
     position, visitedCorners = state
 
-    if False in visitedCorners:
-        costToClosestCorner = max([(manhattanDistance(position, corners[i])) for i in range(len(corners)) if visitedCorners[i] == False])
-    else:
-        costToClosestCorner = 0
-    return costToClosestCorner
+    unvisitedCorners = []
+    estimatedCost = 0
+
+    while len(unvisitedCorners) < sum([1 for c in visitedCorners if c == False]):
+        cost, corner = min([(manhattanDistance(position, corners[i]), corners[i]) for i in range(len(corners)) if visitedCorners[i] == False and corners[i] not in unvisitedCorners])
+        #print("-position: " + ', '.join(map(str, position)) + " cost: " + str(cost) + " corner: " + ', '.join(map(str, corner)))
+        estimatedCost += cost
+        unvisitedCorners.append(corner)
+        position = corner
+
+    #print ("Pos: " + ', '.join(map(str, position)) + " Cost: " + str(estimatedCost))
+
+    return estimatedCost
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
